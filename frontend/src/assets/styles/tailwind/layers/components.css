@@ -1,0 +1,8 @@
+/* 自定义组件样式 */
+@layer components {
+    /* 干净的input组件样式，基础样式参考自shadcn的input组件 */
+    .pure-ipt {
+      @apply file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground h-9 w-full min-w-0 px-3 py-1 text-base transition-colors outline-none file:inline-flex file:h-7 file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm;
+      border: none; /* 这里之所以没写边框，是因为会与外部使用的地方如果再写border会冲突 */
+    }
+  }

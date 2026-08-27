@@ -1,0 +1,43 @@
+/* 自定义工具类 */
+@layer utilities {
+    /* 自定义阴影样式 - 更柔和的多层阴影效果 */
+    .shadow-soft {
+      box-shadow:
+        0 4px 8px -4px rgba(0, 0, 0, 0.13),
+        0 6px 16px 0 rgba(0, 0, 0, 0.08),
+        0 12px 24px 16px rgba(0, 0, 0, 0.04);
+    }
+  
+    /* 自定义阴影变体 */
+    .shadow-soft-sm {
+      box-shadow:
+        0 2px 4px -2px rgba(0, 0, 0, 0.1),
+        0 3px 8px 0 rgba(0, 0, 0, 0.06),
+        0 6px 12px 8px rgba(0, 0, 0, 0.03);
+    }
+  
+    .shadow-soft-lg {
+      box-shadow:
+        0 6px 12px -6px rgba(0, 0, 0, 0.15),
+        0 9px 24px 0 rgba(0, 0, 0, 0.1),
+        0 18px 36px 24px rgba(0, 0, 0, 0.05);
+    }
+  
+    .shadow-soft-xl {
+      box-shadow:
+        0 8px 16px -8px rgba(0, 0, 0, 0.18),
+        0 12px 32px 0 rgba(0, 0, 0, 0.12),
+        0 24px 48px 32px rgba(0, 0, 0, 0.06);
+    }
+  
+    /* 圆形图标按钮基础样式 - 用于覆盖 Button 组件默认样式 */
+    .icon-btn,
+    .icon-btn-inactive {
+      @apply w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-all;
+    }
+  
+    /* 圆形图标按钮 - 非激活状态 */
+    .icon-btn-inactive {
+      @apply bg-gray-100 text-gray-600 hover:bg-gray-200;
+    }
+  }
