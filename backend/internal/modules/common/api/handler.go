@@ -5,24 +5,21 @@ import (
 	sharedAPI "backend/internal/shared/api"
 	"context"
 	"net/http"
+	"time"
 
 	"gorm.io/gorm"
 )
 
-type teacherReader interface {
-	Get(ctx context.Context, id int) (*query.TeacherModel, error)
-}
-
 type CommonHandler struct {
-	teacherReader teacherReader
+	teacherQuerySvc *query.TeacherService
 }
 
 type HealthResponse struct {
 	Status string `json:"status" doc:"服务状态" example:"ok"`
 }
 
-func NewCommonHandler(teacherReader teacherReader) *CommonHandler {
-	return &CommonHandler{teacherReader: teacherReader}
+func NewCommonHandler(teacherQuerySvc *query.TeacherService) *CommonHandler {
+	return &CommonHandler{teacherQuerySvc: teacherQuerySvc}
 }
 
 // Health 返回服务进程的存活状态。
@@ -31,7 +28,15 @@ func (h *CommonHandler) Health(_ context.Context, _ *struct{}) (*sharedAPI.Body[
 }
 
 func (h *CommonHandler) GetTeacher(ctx context.Context, req *GetTeacherRequest) (*sharedAPI.Body[*TeacherResponse], error) {
-	teacher, err := h.teacherReader.Get(ctx, req.ID)
+	timer := time.NewTimer(3 * time.Second)
+	defer timer.Stop()
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	case <-timer.C:
+	}
+
+	teacher, err := h.teacherQuerySvc.Get(ctx, req.ID)
 	if err != nil {
 		return nil, sharedAPI.MapError(
 			"获取老师信息失败：",

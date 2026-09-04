@@ -9,7 +9,7 @@ import (
 
 // RegisterModule 组装并注册不属于具体业务领域的通用接口。
 func RegisterModule(serverAPI huma.API) {
-	teacherService := query.NewTeacherService()
-	handler := api.NewCommonHandler(teacherService)
+	teacherQuerySvc := query.NewTeacherService()
+	handler := api.NewCommonHandler(teacherQuerySvc)
 	api.RegisterRoutes(handler, serverAPI)
 }
