@@ -2,11 +2,14 @@ package bootstrap
 
 import (
 	"backend/internal/modules/article"
+	"backend/internal/modules/common"
 	"backend/internal/modules/feed"
 	sharedApi "backend/internal/shared/api"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
+	"strings"
 
 	"backend/internal/infrastructure"
 
@@ -30,18 +33,50 @@ func (app *App) Run() {
 		Addr:    addr,
 		Handler: sharedApi.Cors(app.Router),
 	}
-	log.Printf(
-		"HTTP已服务启动: http://localhost%s",
-		addr,
-	)
-	log.Printf(
-		"OpenAPI文档: http://localhost%s/docs",
-		addr,
-	)
+	serviceURLs := []string{"http://localhost" + addr}
+	docURLs := []string{"http://localhost" + addr + "/docs"}
+	for _, ip := range localLANIPv4Addresses() {
+		serviceURLs = append(serviceURLs, "http://"+ip+addr)
+		docURLs = append(docURLs, "http://"+ip+addr+"/docs")
+	}
+	log.Printf("HTTP已服务启动: %s", strings.Join(serviceURLs, ", "))
+	log.Printf("OpenAPI文档: %s", strings.Join(docURLs, ", "))
 	err := server.ListenAndServe()
 	if err != nil {
 		log.Printf("HTTP 服务启动失败: %v", err)
 	}
+}
+
+func localLANIPv4Addresses() []string {
+	interfaces, err := net.Interfaces()
+	if err != nil {
+		return nil
+	}
+
+	var result []string
+	seen := make(map[string]struct{})
+	for _, networkInterface := range interfaces {
+		if networkInterface.Flags&net.FlagUp == 0 || networkInterface.Flags&net.FlagLoopback != 0 {
+			continue
+		}
+		addresses, err := networkInterface.Addrs()
+		if err != nil {
+			continue
+		}
+		for _, address := range addresses {
+			ip, _, err := net.ParseCIDR(address.String())
+			if err != nil || ip.To4() == nil || !ip.IsPrivate() {
+				continue
+			}
+			value := ip.String()
+			if _, exists := seen[value]; exists {
+				continue
+			}
+			seen[value] = struct{}{}
+			result = append(result, value)
+		}
+	}
+	return result
 }
 
 // NewApp 这里负责组装整个系统
@@ -72,6 +107,7 @@ func NewApp() (*App, error) {
 	api := humago.New(router, config)
 
 	// 初始化服务模块
+	common.RegisterModule(api)
 	article.RegisterModule(db, api)
 	feed.RegisterModule(db, api)
 
