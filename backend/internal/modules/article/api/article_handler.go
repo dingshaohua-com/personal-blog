@@ -60,7 +60,10 @@ func (h *ArticleHandler) List(ctx context.Context, req *ListArticleRequest) (*ap
 		log.Printf("查询文章列表失败: %v", err)
 		return nil, api.MapError("查询列表失败", err)
 	}
-	items := ToArticleResponseList(result.Items)
+	items, err := ToArticleResponseList(result.Items)
+	if err != nil {
+		return nil, api.MapError("文章数据转换失败", err)
+	}
 	page := api.Page{Page: result.Params.Page, PageSize: result.Params.PageSize}
 	return api.NewBody(api.NewPageResult(items, result.Total, &page)), nil
 }
@@ -70,5 +73,9 @@ func (h *ArticleHandler) Get(ctx context.Context, req *GetArticleRequest) (*api.
 	if err != nil {
 		return nil, api.MapError("获取失败", err)
 	}
-	return api.NewBody(ToArticleDetailResponse(article)), nil
+	response, err := ToArticleDetailResponse(article)
+	if err != nil {
+		return nil, api.MapError("文章数据转换失败", err)
+	}
+	return api.NewBody(response), nil
 }

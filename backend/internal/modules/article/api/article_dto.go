@@ -29,12 +29,15 @@ type CreateArticleResponse struct {
 }
 
 func (r *CreateArticleRequest) ToCommand() command.CreateArticleCommand {
-	var result command.CreateArticleCommand
-	err := copier.Copy(&result, r.Body)
-	if err != nil {
-		return command.CreateArticleCommand{}
+	content := ""
+	if r.Body.Content != nil {
+		content = *r.Body.Content
 	}
-	return result
+	return command.CreateArticleCommand{
+		Title:   r.Body.Title,
+		TypeID:  r.Body.TypeID,
+		Content: content,
+	}
 }
 
 type ArticleResponse struct {
@@ -52,23 +55,23 @@ type ArticleDetailResponse struct {
 }
 
 // ToArticleDetailResponse 封装单个对象的转换：MODEL -> Response
-func ToArticleDetailResponse(article *query.ArticleModel) ArticleDetailResponse {
+func ToArticleDetailResponse(article *query.ArticleModel) (ArticleDetailResponse, error) {
 	var result ArticleDetailResponse
 	err := copier.Copy(&result, article)
 	if err != nil {
-		return ArticleDetailResponse{}
+		return ArticleDetailResponse{}, err
 	}
-	return result
+	return result, nil
 }
 
 // ToArticleResponseList 封装切片/列表的批量转换：[]MODEL -> []Response
-func ToArticleResponseList(pos []*query.ArticleListItemModel) []ArticleResponse {
+func ToArticleResponseList(pos []*query.ArticleListItemModel) ([]ArticleResponse, error) {
 	var dst []ArticleResponse
 	err := copier.Copy(&dst, pos)
 	if err != nil {
-		return nil
+		return nil, err
 	}
-	return dst
+	return dst, nil
 }
 
 type CreateFeedRequest struct {
@@ -77,9 +80,9 @@ type CreateFeedRequest struct {
 
 type CreateArticleRequest struct {
 	Body struct {
-		Title   *string `json:"title,omitempty" minLength:"1"`
-		TypeID  *int    `json:"typeId,omitempty" minimum:"1"`
-		Content *string `json:"content,omitempty" minLength:"1"`
+		Title   string  `json:"title" minLength:"1"`
+		TypeID  *int    `json:"typeId,omitempty" minLength:"1"`
+		Content *string `json:"content,omitempty"`
 	}
 }
 
@@ -88,7 +91,7 @@ type UpdateArticleRequest struct {
 	Body struct {
 		Title   *string `json:"title,omitempty" minLength:"1"`
 		TypeID  *int    `json:"typeId,omitempty" minimum:"1"`
-		Content *string `json:"content,omitempty" minLength:"1"`
+		Content *string `json:"content,omitempty"`
 	}
 }
 

@@ -45,7 +45,7 @@ func (r *ArticleRepository) FindByID(ctx context.Context, id int) (*domain.Artic
 	if err := r.db.WithContext(ctx).First(&model, id).Error; err != nil {
 		return nil, err
 	}
-	return model.toDomain(), nil
+	return model.toDomain()
 }
 
 func (r *ArticleRepository) Delete(ctx context.Context, id int) error {

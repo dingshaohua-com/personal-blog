@@ -16,17 +16,17 @@ var (
 type Article struct {
 	id        int
 	title     ArticleTitle
-	typeID    int
+	typeID    *int
 	createdAt time.Time
 	content   string
 }
 
 func (d *Article) ID() int             { return d.id }
-func (d *Article) TypeID() int         { return d.typeID }
+func (d *Article) TypeID() *int        { return d.typeID }
 func (d *Article) Title() ArticleTitle { return d.title }
 func (d *Article) Content() string     { return d.content }
 
-func NewArticle(title ArticleTitle, typeID int, content string) *Article {
+func NewArticle(title ArticleTitle, typeID *int, content string) *Article {
 	return &Article{
 		title:   title,
 		typeID:  typeID,
@@ -38,7 +38,7 @@ func RestoreArticle(
 	id int,
 	title ArticleTitle,
 	content string,
-	typeID int,
+	typeID *int,
 	createdAt time.Time,
 ) *Article {
 	return &Article{
@@ -63,7 +63,7 @@ func (d *Article) ChangeContent(value string) {
 	d.content = value
 }
 func (d *Article) ChangeTypeID(value int) {
-	d.typeID = value
+	d.typeID = &value
 }
 
 // ArticleTitle 值对象，不变量

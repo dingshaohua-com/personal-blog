@@ -13,13 +13,13 @@ type ArticleTypeResponse struct {
 	Slug string `json:"slug"`
 }
 
-func ToArticleTypeResponseList(pos []*query.ArticleTypeModel) []ArticleTypeResponse {
+func ToArticleTypeResponseList(pos []*query.ArticleTypeModel) ([]ArticleTypeResponse, error) {
 	var dst []ArticleTypeResponse
 	err := copier.Copy(&dst, pos)
 	if err != nil {
-		return nil
+		return nil, err
 	}
-	return dst
+	return dst, nil
 }
 
 type CreateArticleTypeRequest struct {

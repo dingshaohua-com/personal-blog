@@ -2,7 +2,7 @@ package command
 
 type CreateArticleCommand struct {
 	Title   string
-	TypeID  int
+	TypeID  *int
 	Content string
 }
 

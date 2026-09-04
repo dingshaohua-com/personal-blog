@@ -41,7 +41,10 @@ func (h *ArticleTypeHandler) List(ctx context.Context, _ *struct{}) (*api.Body[[
 	if err != nil {
 		return nil, err
 	}
-	articleTypesResp := ToArticleTypeResponseList(articleTypes)
+	articleTypesResp, err := ToArticleTypeResponseList(articleTypes)
+	if err != nil {
+		return nil, api.MapError("文章类型数据转换失败", err)
+	}
 	return api.NewBody(articleTypesResp), nil
 }
 
