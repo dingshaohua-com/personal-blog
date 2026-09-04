@@ -8,9 +8,10 @@ import (
 )
 
 var (
-	ErrTitleNotFound = errors.New("文章不存在")
-	ErrTitleEmpty    = errors.New("文章标题不能为空")
-	ErrTitleTooLong  = errors.New("文章标题太长")
+	ErrArticleNotFound      = errors.New("文章不存在")
+	ErrTitleEmpty           = errors.New("文章标题不能为空")
+	ErrTitleTooLong         = errors.New("文章标题太长")
+	ErrInvalidArticleTypeID = errors.New("文章类型 ID 必须大于 0")
 )
 
 type Article struct {
@@ -26,12 +27,15 @@ func (d *Article) TypeID() *int        { return d.typeID }
 func (d *Article) Title() ArticleTitle { return d.title }
 func (d *Article) Content() string     { return d.content }
 
-func NewArticle(title ArticleTitle, typeID *int, content string) *Article {
+func NewArticle(title ArticleTitle, typeID *int, content string) (*Article, error) {
+	if typeID != nil && *typeID <= 0 {
+		return nil, ErrInvalidArticleTypeID
+	}
 	return &Article{
 		title:   title,
 		typeID:  typeID,
 		content: content,
-	}
+	}, nil
 }
 
 func RestoreArticle(
@@ -62,8 +66,12 @@ func (d *Article) ChangeTitle(value string) error {
 func (d *Article) ChangeContent(value string) {
 	d.content = value
 }
-func (d *Article) ChangeTypeID(value int) {
+func (d *Article) ChangeTypeID(value int) error {
+	if value <= 0 {
+		return ErrInvalidArticleTypeID
+	}
 	d.typeID = &value
+	return nil
 }
 
 // ArticleTitle 值对象，不变量

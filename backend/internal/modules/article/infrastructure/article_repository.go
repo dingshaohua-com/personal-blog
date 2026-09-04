@@ -3,6 +3,7 @@ package infrastructure
 import (
 	"backend/internal/modules/article/domain"
 	"context"
+	"errors"
 
 	"gorm.io/gorm"
 )
@@ -30,19 +31,24 @@ func (r *ArticleRepository) Update(ctx context.Context, article *domain.Article)
 	result := r.db.WithContext(ctx).
 		Model(&ArticleModel{}).
 		Where("id = ?", article.ID()).
+		Select("title", "type_id", "content"). // 显式选择更新字段，确保 content="" 和 type_id=NULL 等零值也能写入数据库。
 		Updates(po)
 	if result.Error != nil {
 		return result.Error
 	}
 	if result.RowsAffected == 0 {
-		return domain.ErrTitleEmpty
+		return domain.ErrArticleNotFound
 	}
 	return nil
 }
 
 func (r *ArticleRepository) FindByID(ctx context.Context, id int) (*domain.Article, error) {
 	var model ArticleModel
-	if err := r.db.WithContext(ctx).First(&model, id).Error; err != nil {
+	err := r.db.WithContext(ctx).First(&model, id).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, domain.ErrArticleNotFound
+	}
+	if err != nil {
 		return nil, err
 	}
 	return model.toDomain()

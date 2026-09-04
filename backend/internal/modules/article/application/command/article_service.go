@@ -20,7 +20,10 @@ func (s *ArticleService) Create(ctx context.Context, cmd CreateArticleCommand) (
 	if err != nil {
 		return 0, err
 	}
-	articleDomain := domain.NewArticle(articleTitle, cmd.TypeID, cmd.Content)
+	articleDomain, err := domain.NewArticle(articleTitle, cmd.TypeID, cmd.Content)
+	if err != nil {
+		return 0, err
+	}
 	return s.repo.Create(ctx, articleDomain)
 }
 
@@ -38,7 +41,10 @@ func (s *ArticleService) Update(ctx context.Context, cmd UpdateArticleCommand) e
 		articleDomain.ChangeContent(*cmd.Content)
 	}
 	if cmd.TypeID != nil {
-		articleDomain.ChangeTypeID(*cmd.TypeID)
+		err := articleDomain.ChangeTypeID(*cmd.TypeID)
+		if err != nil {
+			return err
+		}
 	}
 	return s.repo.Update(ctx, articleDomain)
 }
