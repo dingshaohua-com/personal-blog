@@ -1,9 +1,6 @@
 package bootstrap
 
 import (
-	"backend/internal/modules/article"
-	"backend/internal/modules/common"
-	"backend/internal/modules/feed"
 	sharedApi "backend/internal/shared/api"
 	"fmt"
 	"log"
@@ -13,8 +10,6 @@ import (
 
 	"backend/internal/infrastructure"
 
-	"github.com/danielgtaylor/huma/v2"
-	"github.com/danielgtaylor/huma/v2/adapters/humago"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
@@ -100,16 +95,7 @@ func NewApp() (*App, error) {
 
 	// 初始化服务
 	router := http.NewServeMux()
-	config := huma.DefaultConfig("My API", "1.0.0")
-	config.CreateHooks = nil
-	//config.DocsRenderer = huma.DocsRendererScalar
-	//config.DocsRenderer = huma.DocsRendererSwaggerUI
-	api := humago.New(router, config)
-
-	// 初始化服务模块
-	common.RegisterModule(api)
-	article.RegisterModule(db, api)
-	feed.RegisterModule(db, api)
+	NewAPI(router, db)
 
 	return &App{
 		Router:   router,

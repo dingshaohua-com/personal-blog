@@ -1,17 +1,18 @@
 package api
 
 import (
+	sharedApi "backend/internal/shared/api"
+
 	"github.com/danielgtaylor/huma/v2"
 )
 
 func RegisterRoutes(handler *FeedHandler, api huma.API) {
-	feedGroup := huma.NewGroup(api, "/feed")
+	feedGroup := sharedApi.NewGroup(api, "/feed", "feed")
 	feedGroup.UseSimpleModifier(func(op *huma.Operation) {
-		op.Tags = []string{"feed"}
 		op.Description = "说说"
 	})
 	huma.Get(feedGroup, "", handler.List, func(op *huma.Operation) {
-		op.OperationID = "list1"
+		op.OperationID = "list"
 		op.Summary = "列表"
 	})
 	huma.Get(feedGroup, "/{id}", handler.Get, func(op *huma.Operation) {

@@ -36,7 +36,7 @@ func (h *ArticleTypeHandler) Create(ctx context.Context, req *CreateArticleTypeR
 	return api.NewBody(CreateArticleTypeResponse{ID: id}), nil
 }
 
-func (h *ArticleTypeHandler) Update(ctx context.Context, req *UpdateArticleTypeRequest) (*api.Body[*struct{}], error) {
+func (h *ArticleTypeHandler) Update(ctx context.Context, req *UpdateArticleTypeRequest) (*struct{}, error) {
 	articleType := req.ToCommand()
 	err := h.service.Update(ctx, articleType)
 	if err != nil {
@@ -57,7 +57,7 @@ func (h *ArticleTypeHandler) List(ctx context.Context, _ *struct{}) (*api.Body[[
 	return api.NewBody(articleTypesResp), nil
 }
 
-func (h *ArticleTypeHandler) Delete(ctx context.Context, req *DeleteArticleTypeRequest) (*api.Body[*struct{}], error) {
+func (h *ArticleTypeHandler) Delete(ctx context.Context, req *DeleteArticleTypeRequest) (*struct{}, error) {
 	err := h.service.Delete(ctx, req.ID)
 	if err != nil {
 		return nil, api.MapError("删除文章类型失败", err, articleTypeErrorMappings...)

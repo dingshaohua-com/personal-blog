@@ -1,14 +1,5 @@
-import { Link } from 'react-router';
-import HelloWorld from '@/components/hello-world';
+import ArticleList from '@/components/article-list';
 
 export default function Home() {
-  return (
-    <div className="home">
-      <Link to="/about"><button>about</button></Link>
-      <div>
-        <div>呵呵</div>
-        <HelloWorld />
-      </div>
-    </div>
-  );
+  return <ArticleList />;
 }
