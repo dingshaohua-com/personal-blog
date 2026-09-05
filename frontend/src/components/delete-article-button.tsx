@@ -1,3 +1,4 @@
+import { Trash2 } from 'lucide-react';
 import { AlertDialog } from 'radix-ui';
 import { useState } from 'react';
 import { useSWRConfig } from 'swr';
@@ -5,7 +6,7 @@ import api from '@/api';
 import { Button } from '@/components/ui/button';
 import { apiErrorMessage, isArticleCacheKey } from '@/utils/article';
 
-export default function DeleteArticleButton({ id, title, onDeleted }: { id: number; title: string; onDeleted: () => void }) {
+export default function DeleteArticleButton({ id, title, onDeleted, iconOnly = false }: { id: number; title: string; onDeleted: () => void; iconOnly?: boolean }) {
   const [open, setOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState('');
@@ -38,7 +39,15 @@ export default function DeleteArticleButton({ id, title, onDeleted }: { id: numb
       }}
     >
       <AlertDialog.Trigger asChild>
-        <Button variant="destructive">删除</Button>
+        <Button
+          variant={iconOnly ? 'ghost' : 'destructive'}
+          size={iconOnly ? 'icon-lg' : 'default'}
+          className={iconOnly ? 'text-muted-foreground hover:bg-destructive/10 hover:text-destructive' : undefined}
+          aria-label={`删除《${title}》`}
+          title="删除文章"
+        >
+          {iconOnly ? <Trash2 aria-hidden="true" /> : '删除'}
+        </Button>
       </AlertDialog.Trigger>
       <AlertDialog.Portal>
         <AlertDialog.Overlay className="fixed inset-0 z-40 bg-black/40" />

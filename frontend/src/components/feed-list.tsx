@@ -1,6 +1,7 @@
 import { MessageCircle, RefreshCw } from 'lucide-react';
 import { useState } from 'react';
 import api from '@/api';
+import { CreateFeedButton, DeleteFeedButton } from '@/components/feed-actions';
 import MarkdownContent from '@/components/markdown-content';
 import { Button } from '@/components/ui/button';
 import { apiErrorMessage } from '@/utils/article';
@@ -19,10 +20,12 @@ export default function FeedList() {
           </h2>
           <p className="mt-1 text-xs text-muted-foreground">{data && !error ? `共 ${feeds.length} 条 · ` : ''}简短的想法，随时的分享</p>
         </div>
-        <Button variant="outline" disabled={isValidating} onClick={() => void mutate()} aria-label="刷新说说">
+        <div className="flex gap-2">
+        <Button variant="ghost" size="icon-lg" className="text-muted-foreground" disabled={isValidating} onClick={() => void mutate()} aria-label="刷新说说" title="刷新说说">
           <RefreshCw className={isValidating ? 'animate-spin' : ''} aria-hidden="true" />
-          刷新
         </Button>
+        <CreateFeedButton onCreated={(feed) => { void mutate((current) => [feed, ...(current ?? []).filter((item) => item.id !== feed.id)]); }} />
+        </div>
       </div>
       {isLoading && (
         <p role="status" className="rounded-xl border bg-background p-8 text-center text-muted-foreground">
@@ -38,16 +41,19 @@ export default function FeedList() {
         !error &&
         (feeds.length ? (
           <>
-            <ol className="space-y-4">
+            <ol className="divide-y border-t">
               {feeds.slice(0, visibleCount).map((feed) => (
-                <li key={feed.id} className="flex gap-3 rounded-2xl border bg-card p-5 shadow-sm sm:gap-5 sm:p-6">
+                <li key={feed.id} className="flex gap-3 py-5 sm:gap-5 sm:py-6">
                   <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-full bg-emerald-700/8 text-emerald-700 dark:text-emerald-300">
                     <MessageCircle className="size-4" aria-hidden="true" />
                   </span>
                   <article className="min-w-0 flex-1">
-                    <time dateTime={feed.createdAt} className="mb-3 block text-xs text-muted-foreground">
+                    <div className="mb-3 flex items-center justify-between gap-3">
+                    <time dateTime={feed.createdAt} className="text-xs text-muted-foreground">
                       {new Date(feed.createdAt).toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false })}
                     </time>
+                    <DeleteFeedButton feed={feed} onDeleted={(id) => { void mutate((current) => (current ?? []).filter((item) => item.id !== id)); }} />
+                    </div>
                     <div className="text-sm leading-7 sm:text-base">
                       <MarkdownContent content={feed.content} />
                     </div>

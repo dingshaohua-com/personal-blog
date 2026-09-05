@@ -1,4 +1,4 @@
-import { ArrowUpRight, BookOpen, ChevronLeft, ChevronRight, Plus, RefreshCw } from 'lucide-react';
+import { BookOpen, ChevronLeft, ChevronRight, Pencil, Plus, RefreshCw } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router';
 import api from '@/api';
 import DeleteArticleButton from '@/components/delete-article-button';
@@ -29,14 +29,12 @@ export default function ArticleList() {
           <p className="mt-1 text-xs text-muted-foreground">{data && !error ? `共 ${data.total} 篇 · ` : ''}每页 6 篇</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" disabled={isValidating} onClick={() => void mutate()} aria-label="刷新文章">
+          <Button variant="ghost" size="icon-lg" className="text-muted-foreground" disabled={isValidating} onClick={() => void mutate()} aria-label="刷新文章" title="刷新文章">
             <RefreshCw className={isValidating ? 'animate-spin' : ''} aria-hidden="true" />
-            刷新
           </Button>
-          <Button asChild className="bg-emerald-700 text-white hover:bg-emerald-800">
-            <Link to="/articles/new">
+          <Button asChild size="icon-lg" className="bg-emerald-700 text-white hover:bg-emerald-800">
+            <Link to="/articles/new" aria-label="写文章" title="写文章">
               <Plus aria-hidden="true" />
-              写文章
             </Link>
           </Button>
         </div>
@@ -54,33 +52,38 @@ export default function ArticleList() {
       {!isLoading && !error && data && (
         <>
           {data.list?.length ? (
-            <ul className="grid gap-4 md:grid-cols-2">
+            <ul className="divide-y border-t">
               {data.list.map((article) => (
-                <li key={article.id} className="group flex min-w-0 flex-col rounded-2xl border bg-card p-5 text-card-foreground shadow-sm transition-shadow hover:shadow-md sm:p-6">
-                  <div className="mb-5 flex flex-wrap items-center justify-between gap-2 text-xs">
-                    <span className="rounded-md bg-emerald-700/8 px-2.5 py-1 font-medium text-emerald-800 dark:text-emerald-300">{article.typeName || '未分类'}</span>
+                <li key={article.id} className="flex min-w-0 flex-col py-5 sm:py-6">
+                  <div className="mb-2 flex flex-wrap items-center gap-3 text-xs">
                     <time className="text-muted-foreground" dateTime={article.createdAt}>
                       {new Date(article.createdAt).toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' })}
                     </time>
+                    <span aria-hidden="true" className="text-muted-foreground/50">/</span>
+                    <span className="font-medium text-emerald-800 dark:text-emerald-300">{article.typeName || '未分类'}</span>
                   </div>
-                  <h3 className="break-words text-xl font-semibold leading-8">
+                  <h3 className="break-words font-serif text-lg font-semibold leading-7 sm:text-xl">
                     <Link to={`/articles/${article.id}`} className="transition-colors hover:text-emerald-700 dark:hover:text-emerald-400">
                       {article.title}
                     </Link>
                   </h3>
-                  {article.description && <p className="mt-3 line-clamp-2 text-sm leading-7 text-muted-foreground">{article.description}</p>}
-                  <div className="mt-auto flex flex-wrap items-center justify-between gap-3 pt-6">
-                    <Link to={`/articles/${article.id}`} className="inline-flex items-center gap-1 text-sm font-medium text-emerald-700 hover:underline dark:text-emerald-400" aria-label={`阅读《${article.title}》`}>
+                  {article.description && <p className="mt-2 line-clamp-3 break-words text-sm leading-6 text-muted-foreground sm:text-base sm:leading-7">{article.description}</p>}
+                  <div className="flex flex-wrap items-center justify-between gap-3 pt-3">
+                    <Link
+                      to={`/articles/${article.id}`}
+                      className="inline-flex min-h-9 items-center rounded-sm text-sm text-muted-foreground underline-offset-4 transition-colors hover:text-emerald-700 hover:underline focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-4 dark:hover:text-emerald-400"
+                      aria-label={`阅读《${article.title}》`}
+                    >
                       阅读全文
-                      <ArrowUpRight className="size-4" aria-hidden="true" />
                     </Link>
-                    <div className="flex gap-1">
-                      <Button asChild variant="ghost">
-                        <Link to={`/articles/${article.id}/edit`} aria-label={`编辑《${article.title}》`}>
-                          编辑
+                    <div className="flex gap-1 text-muted-foreground">
+                      <Button asChild variant="ghost" size="icon-lg" className="hover:text-emerald-700 dark:hover:text-emerald-400">
+                        <Link to={`/articles/${article.id}/edit`} aria-label={`编辑《${article.title}》`} title="编辑文章">
+                          <Pencil aria-hidden="true" />
                         </Link>
                       </Button>
                       <DeleteArticleButton
+                        iconOnly
                         id={article.id}
                         title={article.title}
                         onDeleted={() => {
@@ -106,15 +109,13 @@ export default function ArticleList() {
             </div>
           )}
           <nav aria-label="文章分页" className="flex flex-wrap items-center justify-between gap-3 border-t pt-6">
-            <Button variant="outline" disabled={page <= 1 || isValidating} onClick={() => setPage(page - 1)}>
+            <Button variant="outline" size="icon-lg" aria-label="上一页" title="上一页" disabled={page <= 1 || isValidating} onClick={() => setPage(page - 1)}>
               <ChevronLeft aria-hidden="true" />
-              上一页
             </Button>
             <p className="text-xs text-muted-foreground sm:text-sm" aria-live="polite">
               第 {data.page} / {Math.max(1, data.totalPage)} 页 · 共 {data.total} 篇
             </p>
-            <Button variant="outline" disabled={page >= data.totalPage || isValidating} onClick={() => setPage(page + 1)}>
-              下一页
+            <Button variant="outline" size="icon-lg" aria-label="下一页" title="下一页" disabled={page >= data.totalPage || isValidating} onClick={() => setPage(page + 1)}>
               <ChevronRight aria-hidden="true" />
             </Button>
           </nav>

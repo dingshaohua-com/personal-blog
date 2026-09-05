@@ -84,7 +84,7 @@ type ArticleTitle struct {
 	value string
 }
 
-const MaxArticleTitleLength = 10
+const MaxArticleTitleLength = 200
 
 func NewArticleTitle(value string) (ArticleTitle, error) {
 	value = strings.TrimSpace(value)

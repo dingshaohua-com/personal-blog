@@ -26,8 +26,8 @@ function ArticleForm({ article }: { article?: ArticleDetailResponse }) {
     if (saving) return;
     const normalizedTitle = title.trim();
     // Matches the current backend ArticleTitle domain rule.
-    if (!normalizedTitle || [...normalizedTitle].length > 10) {
-      setError('标题不能为空，且不能超过 10 个字符。');
+    if (!normalizedTitle || [...normalizedTitle].length > 200) {
+      setError('标题不能为空，且不能超过 200 个字符。');
       return;
     }
     setSaving(true);
@@ -54,7 +54,7 @@ function ArticleForm({ article }: { article?: ArticleDetailResponse }) {
           </label>
           <input id="article-title" name="title" required value={title} onChange={(event) => setTitle(event.target.value)} aria-describedby="title-hint" className={fieldClass} />
           <p id="title-hint" className="text-sm text-muted-foreground">
-            最多 10 个字符（{[...title.trim()].length}/10）
+            最多 200 个字符（{[...title.trim()].length}/200）
           </p>
         </div>
         <div className="space-y-2">

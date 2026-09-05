@@ -54,7 +54,7 @@ func (s *ArticleService) ListDao(ctx context.Context, queryParam ListArticlesQue
 		return nil, 0, err
 	}
 	if err := dbQuery.
-		Select("article.*, article_type.name AS type_name").
+		Select("article.*, LEFT(SPLIT_PART(REPLACE(article.content, CHR(13), ''), CHR(10) || CHR(10), 1), 160) AS description, article_type.name AS type_name").
 		Order("article.created_at DESC, article.id DESC").
 		Limit(queryParam.Page.Limit()).
 		Offset(queryParam.Page.Offset()).
