@@ -3,6 +3,7 @@ package infrastructure
 import (
 	"backend/internal/modules/article/domain"
 	"context"
+	"errors"
 
 	"gorm.io/gorm"
 )
@@ -42,7 +43,11 @@ func (r *ArticleTypeRepository) Create(ctx context.Context, articleType *domain.
 
 func (r *ArticleTypeRepository) FindByID(ctx context.Context, id int) (*domain.ArticleType, error) {
 	model := &ArticleTypeModel{}
-	if err := r.db.WithContext(ctx).First(&model, id).Error; err != nil {
+	err := r.db.WithContext(ctx).First(&model, id).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, domain.ArticleTypeErrNotFound
+	}
+	if err != nil {
 		return nil, err
 	}
 	return model.toDomain(), nil
