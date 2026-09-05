@@ -1,16 +1,12 @@
 package domain
 
 import (
+	"backend/internal/shared/validation"
 	"errors"
 	"strings"
-	"unicode/utf8"
 )
 
-var (
-	ArticleTypeErrNotFound  = errors.New("文章类型 不存在")
-	ArticleTypeErrNameEmpty = errors.New("文章类型名称不能为空")
-	ArticleTypeErrNameLong  = errors.New("文章类型名称太长")
-)
+var ArticleTypeErrNotFound = errors.New("文章类型不存在")
 
 type ArticleType struct {
 	id   int
@@ -61,11 +57,9 @@ const MaxArticleTypeNameLength = 10
 
 func NewArticleTypeName(value string) (*ArticleTypeName, error) {
 	value = strings.TrimSpace(value)
-	switch {
-	case value == "":
-		return nil, ArticleTypeErrNameEmpty
-	case utf8.RuneCountInString(value) > MaxArticleTypeNameLength:
-		return nil, ArticleTypeErrNameLong
+	if err := validation.String("name", "文章类型名称", value).
+		Required().Max(MaxArticleTypeNameLength).Validate(); err != nil {
+		return nil, err
 	}
 	return &ArticleTypeName{
 		value: value,

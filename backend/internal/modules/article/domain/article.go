@@ -1,18 +1,21 @@
 package domain
 
 import (
+	"backend/internal/shared/validation"
 	"errors"
 	"strings"
 	"time"
-	"unicode/utf8"
+
+	"github.com/go-playground/validator/v10"
 )
 
-var (
-	ErrArticleNotFound      = errors.New("文章不存在")
-	ErrTitleEmpty           = errors.New("文章标题不能为空")
-	ErrTitleTooLong         = errors.New("文章标题太长")
-	ErrInvalidArticleTypeID = errors.New("文章类型 ID 必须大于 0")
-)
+var ErrArticleNotFound = errors.New("文章不存在")
+
+var articleValidator = validator.New()
+
+func validateArticleTypeID(value int) error {
+	return validation.Wrap("typeId", "文章类型 ID", articleValidator.Var(value, "gt=0"))
+}
 
 type Article struct {
 	id        int
@@ -28,8 +31,10 @@ func (d *Article) Title() ArticleTitle { return d.title }
 func (d *Article) Content() string     { return d.content }
 
 func NewArticle(title ArticleTitle, typeID *int, content string) (*Article, error) {
-	if typeID != nil && *typeID <= 0 {
-		return nil, ErrInvalidArticleTypeID
+	if typeID != nil {
+		if err := validateArticleTypeID(*typeID); err != nil {
+			return nil, err
+		}
 	}
 	return &Article{
 		title:   title,
@@ -67,8 +72,8 @@ func (d *Article) ChangeContent(value string) {
 	d.content = value
 }
 func (d *Article) ChangeTypeID(value int) error {
-	if value <= 0 {
-		return ErrInvalidArticleTypeID
+	if err := validateArticleTypeID(value); err != nil {
+		return err
 	}
 	d.typeID = &value
 	return nil
@@ -83,11 +88,12 @@ const MaxArticleTitleLength = 10
 
 func NewArticleTitle(value string) (ArticleTitle, error) {
 	value = strings.TrimSpace(value)
-	switch {
-	case value == "":
-		return ArticleTitle{}, ErrTitleEmpty
-	case utf8.RuneCountInString(value) > MaxArticleTitleLength:
-		return ArticleTitle{}, ErrTitleTooLong
+	err := validation.String("title", "文章标题", value).
+		Required().
+		Max(MaxArticleTitleLength).
+		Validate()
+	if err != nil {
+		return ArticleTitle{}, err
 	}
 	return ArticleTitle{value: value}, nil
 }

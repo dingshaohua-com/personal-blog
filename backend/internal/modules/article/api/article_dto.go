@@ -81,7 +81,7 @@ type CreateFeedRequest struct {
 type CreateArticleRequest struct {
 	Body struct {
 		Title   string  `json:"title" minLength:"1"`
-		TypeID  *int    `json:"typeId,omitempty" minLength:"1"`
+		TypeID  *int    `json:"typeId,omitempty" minimum:"1"`
 		Content *string `json:"content,omitempty"`
 	}
 }

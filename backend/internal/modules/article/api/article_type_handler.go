@@ -3,9 +3,18 @@ package api
 import (
 	"backend/internal/modules/article/application/command"
 	"backend/internal/modules/article/application/query"
+	"backend/internal/modules/article/domain"
 	"backend/internal/shared/api"
 	"context"
+	"net/http"
+
+	"gorm.io/gorm"
 )
+
+var articleTypeErrorMappings = []api.ErrorMapping{
+	{Target: domain.ArticleTypeErrNotFound, Status: http.StatusNotFound},
+	{Target: gorm.ErrRecordNotFound, Status: http.StatusNotFound},
+}
 
 type ArticleTypeHandler struct {
 	service *command.ArticleTypeService
@@ -22,7 +31,7 @@ func NewArticleTypeHandler(service *command.ArticleTypeService, query *query.Art
 func (h *ArticleTypeHandler) Create(ctx context.Context, req *CreateArticleTypeRequest) (*api.Body[CreateArticleTypeResponse], error) {
 	id, err := h.service.Create(ctx, req.ToCommand())
 	if err != nil {
-		return nil, err
+		return nil, api.MapError("创建文章类型失败", err, articleTypeErrorMappings...)
 	}
 	return api.NewBody(CreateArticleTypeResponse{ID: id}), nil
 }
@@ -31,7 +40,7 @@ func (h *ArticleTypeHandler) Update(ctx context.Context, req *UpdateArticleTypeR
 	articleType := req.ToCommand()
 	err := h.service.Update(ctx, articleType)
 	if err != nil {
-		return nil, err
+		return nil, api.MapError("更新文章类型失败", err, articleTypeErrorMappings...)
 	}
 	return nil, nil
 }
@@ -39,7 +48,7 @@ func (h *ArticleTypeHandler) Update(ctx context.Context, req *UpdateArticleTypeR
 func (h *ArticleTypeHandler) List(ctx context.Context, _ *struct{}) (*api.Body[[]ArticleTypeResponse], error) {
 	articleTypes, err := h.query.List(ctx)
 	if err != nil {
-		return nil, err
+		return nil, api.MapError("查询文章类型失败", err, articleTypeErrorMappings...)
 	}
 	articleTypesResp, err := ToArticleTypeResponseList(articleTypes)
 	if err != nil {
@@ -51,7 +60,7 @@ func (h *ArticleTypeHandler) List(ctx context.Context, _ *struct{}) (*api.Body[[
 func (h *ArticleTypeHandler) Delete(ctx context.Context, req *DeleteArticleTypeRequest) (*api.Body[*struct{}], error) {
 	err := h.service.Delete(ctx, req.ID)
 	if err != nil {
-		return nil, err
+		return nil, api.MapError("删除文章类型失败", err, articleTypeErrorMappings...)
 	}
 	return nil, nil
 }

@@ -3,11 +3,19 @@ package api
 import (
 	"backend/internal/modules/article/application/command"
 	"backend/internal/modules/article/application/query"
+	"backend/internal/modules/article/domain"
 	"backend/internal/shared/api"
 	"backend/internal/shared/pagination"
 	"context"
-	"log"
+	"net/http"
+
+	"gorm.io/gorm"
 )
+
+var articleErrorMappings = []api.ErrorMapping{
+	{Target: domain.ErrArticleNotFound, Status: http.StatusNotFound},
+	{Target: gorm.ErrRecordNotFound, Status: http.StatusNotFound},
+}
 
 type ArticleHandler struct {
 	cmdSvc   *command.ArticleService
@@ -25,7 +33,7 @@ func (h *ArticleHandler) Create(ctx context.Context, req *CreateArticleRequest) 
 	createArticleCommand := req.ToCommand()
 	createId, err := h.cmdSvc.Create(ctx, createArticleCommand)
 	if err != nil {
-		return nil, err
+		return nil, api.MapError("创建文章失败", err, articleErrorMappings...)
 	}
 	return api.NewBody(CreateArticleResponse{ID: createId}), nil
 }
@@ -33,14 +41,14 @@ func (h *ArticleHandler) Create(ctx context.Context, req *CreateArticleRequest) 
 func (h *ArticleHandler) Update(ctx context.Context, req *UpdateArticleRequest) (*struct{}, error) {
 	updateArticleCommand := req.ToCommand()
 	if err := h.cmdSvc.Update(ctx, updateArticleCommand); err != nil {
-		return nil, err
+		return nil, api.MapError("更新文章失败", err, articleErrorMappings...)
 	}
 	return nil, nil
 }
 
 func (h *ArticleHandler) Delete(ctx context.Context, req *DeleteArticleRequest) (*struct{}, error) {
 	if err := h.cmdSvc.Delete(ctx, req.ID); err != nil {
-		return nil, err
+		return nil, api.MapError("删除文章失败", err, articleErrorMappings...)
 	}
 	return nil, nil
 }
@@ -57,7 +65,6 @@ func (h *ArticleHandler) List(ctx context.Context, req *ListArticleRequest) (*ap
 	}
 	result, err := h.querySvc.List(ctx, queryParam)
 	if err != nil {
-		log.Printf("查询文章列表失败: %v", err)
 		return nil, api.MapError("查询列表失败", err)
 	}
 	items, err := ToArticleResponseList(result.Items)
@@ -71,7 +78,7 @@ func (h *ArticleHandler) List(ctx context.Context, req *ListArticleRequest) (*ap
 func (h *ArticleHandler) Get(ctx context.Context, req *GetArticleRequest) (*api.Body[ArticleDetailResponse], error) {
 	article, err := h.querySvc.Get(ctx, req.ID)
 	if err != nil {
-		return nil, api.MapError("获取失败", err)
+		return nil, api.MapError("获取失败", err, articleErrorMappings...)
 	}
 	response, err := ToArticleDetailResponse(article)
 	if err != nil {

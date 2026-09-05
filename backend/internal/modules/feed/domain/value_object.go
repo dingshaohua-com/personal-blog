@@ -1,8 +1,8 @@
 package domain
 
 import (
+	"backend/internal/shared/validation"
 	"strings"
-	"unicode/utf8"
 )
 
 // FeedContent 值对象
@@ -14,11 +14,9 @@ const MaxFeedContentLength = 100
 
 func NewFeedContent(value string) (FeedContent, error) {
 	value = strings.TrimSpace(value)
-	switch {
-	case value == "":
-		return FeedContent{}, ErrFeedContentEmpty
-	case utf8.RuneCountInString(value) > MaxFeedContentLength:
-		return FeedContent{}, ErrFeedContentTooLong
+	if err := validation.String("content", "Feed 内容", value).
+		Required().Max(MaxFeedContentLength).Validate(); err != nil {
+		return FeedContent{}, err
 	}
 	return FeedContent{value: value}, nil
 }

@@ -1,8 +1,10 @@
 package api
 
 import (
+	"backend/internal/shared/validation"
 	"errors"
 	"log"
+	"net/http"
 )
 
 type ErrorMapping struct {
@@ -16,6 +18,12 @@ func MapError(
 	err error,
 	mappings ...ErrorMapping,
 ) error {
+	if err == nil {
+		return nil
+	}
+	if validationErr, ok := errors.AsType[*validation.Error](err); ok {
+		return NewError(http.StatusUnprocessableEntity, validationErr.Message)
+	}
 	for _, mapping := range mappings {
 		if errors.Is(err, mapping.Target) {
 			return NewError(
@@ -25,6 +33,6 @@ func MapError(
 		}
 	}
 
-	log.Printf("operation failed: %v", err)
-	return InternalError(internalMessage + err.Error())
+	log.Printf("%s: %v", internalMessage, err)
+	return InternalError()
 }

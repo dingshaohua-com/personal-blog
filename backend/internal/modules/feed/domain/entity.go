@@ -6,11 +6,7 @@ import (
 )
 
 // 领域错误
-var (
-	ErrFeedNotFound       = errors.New("feed 不存在")
-	ErrFeedContentEmpty   = errors.New("feed 内容不能为空")
-	ErrFeedContentTooLong = errors.New("feed 内容太长")
-)
+var ErrFeedNotFound = errors.New("feed 不存在")
 
 // Feed 领域实体（也是业务的对象）
 type Feed struct {

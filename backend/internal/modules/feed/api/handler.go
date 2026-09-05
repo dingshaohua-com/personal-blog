@@ -18,14 +18,6 @@ var errorMappings = []sharedApi.ErrorMapping{
 		Target: domain.ErrFeedNotFound,
 		Status: http.StatusNotFound,
 	},
-	{
-		Target: domain.ErrFeedContentEmpty,
-		Status: http.StatusUnprocessableEntity,
-	},
-	{
-		Target: domain.ErrFeedContentTooLong,
-		Status: http.StatusUnprocessableEntity,
-	},
 }
 
 func NewFeedHandler(service *application.FeedService) *FeedHandler {
@@ -35,7 +27,7 @@ func NewFeedHandler(service *application.FeedService) *FeedHandler {
 func (h *FeedHandler) List(ctx context.Context, _ *struct{}) (*sharedApi.Body[[]*dto.FeedDTO], error) {
 	result, err := h.service.List(ctx)
 	if err != nil {
-		return nil, err
+		return nil, sharedApi.MapError("查询 Feed 列表失败", err, errorMappings...)
 	}
 	return sharedApi.NewBody(dto.ToFeedDTOList(result)), nil
 }
