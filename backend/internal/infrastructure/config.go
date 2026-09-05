@@ -20,7 +20,7 @@ func LoadConfig() *Config {
 	redisDB, _ := strconv.Atoi(getEnv("REDIS_DB", "0"))
 	return &Config{
 		AppEnv:   getEnv("APP_ENV", "dev"),
-		HTTPPort: getEnv("HTTP_PORT", "8080"),
+		HTTPPort: getEnv("HTTP_PORT", "18080"),
 		Database: getEnv("PGSQL_PARAMS", ""),
 		Redis: RedisConfig{
 			Addr:     getEnv("REDIS_ADDR", "127.0.0.1:6379"),

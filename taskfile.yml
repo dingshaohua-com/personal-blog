@@ -1,0 +1,27 @@
+version: '3'
+
+includes:
+  frontend:
+    taskfile: ./tasks/frontend.yml
+    dir: ./frontend
+  backend:
+    taskfile: ./tasks/backend.yml
+    dir: ./backend
+
+tasks:
+  default:
+    cmds:
+      - task: dev
+  install:
+    desc: 安装前后端依赖
+    cmds:
+      - task: frontend:install
+      - task: backend:install
+  dev:
+    desc: 并行启动 Vite 和 Air
+    deps: [frontend:dev, backend:dev]
+  build:
+    desc: 构建网页并嵌入 Go 可执行文件
+    cmds:
+      - task: frontend:build
+      - task: backend:build

@@ -13,7 +13,7 @@ cp .env.example .env.local
 pnpm dev
 ```
 
-浏览器默认请求 `/api`，Vite 转发到 `http://localhost:8080` 并移除 `/api` 前缀。
+浏览器默认请求 `/api`，Vite 转发到 `http://localhost:18080` 并移除 `/api` 前缀。
 实际读取文章需要启动后端，并配置其 PostgreSQL、Redis；后端启动命令为 `cd ../backend && go run .`。
 首页文章列表使用生成的 SWR Hook，支持加载状态、错误提示、刷新及分页。
 
@@ -28,10 +28,10 @@ pnpm dev
 | 变量 | 默认值 | 作用 |
 | --- | --- | --- |
 | `VITE_API_BASE_URL` | `/api` | 浏览器请求的 API 基地址，生产构建时也会使用 |
-| `API_PROXY_TARGET` | `http://localhost:8080` | Vite 开发代理的后端地址 |
-| `OPENAPI_INPUT` | `http://localhost:8080/openapi.json` | 后端 OpenAPI 接口地址 |
+| `API_PROXY_TARGET` | `http://localhost:18080` | Vite 开发代理的后端地址 |
+| `OPENAPI_INPUT` | `http://localhost:18080/openapi.json` | 后端 OpenAPI 接口地址 |
 
-生产环境须将 `/api/*` 反向代理到后端并移除 `/api` 前缀，或在构建前设置 `VITE_API_BASE_URL` 为后端地址；使用跨域地址时后端需允许对应的前端来源。
+在仓库根目录执行 `task build`，即可将网页嵌入 Go 程序。生产程序直接处理 `/api/*`，无需额外配置前缀代理。前端单独部署时，可将 `/api/*` 代理到后端，或在构建前设置 `VITE_API_BASE_URL` 为后端地址；使用跨域地址时后端需允许对应的前端来源。
 `API_PROXY_TARGET` 仅用于开发，`OPENAPI_INPUT` 仅用于生成，均不会作为前端环境变量公开。
 
 ## 一键生成 API
@@ -42,7 +42,7 @@ pnpm gen:api
 
 此命令依次执行：
 
-1. 直接请求后端 `http://localhost:8080/openapi.json`，不保存本地 OpenAPI 文件。
+1. 直接请求后端 `http://localhost:18080/openapi.json`，不保存本地 OpenAPI 文件。
 2. Orval 按 Tag 生成类型、Axios 函数、SWR Query/Mutation Hooks。
 3. 自动生成 `src/api/index.ts`，最后执行 TypeScript 检查。
 
@@ -54,7 +54,7 @@ pnpm gen:api
 可以通过 `.env.local` 或命令行指定其他后端 OpenAPI 地址（JSON/YAML 均可）：
 
 ```sh
-OPENAPI_INPUT=http://localhost:8080/openapi.yaml pnpm gen:api
+OPENAPI_INPUT=http://localhost:18080/openapi.yaml pnpm gen:api
 ```
 
 `src/api/generated/` 和 `src/api/index.ts` 一起提交到 Git，保证普通前端构建无需 Go 或在线后端。

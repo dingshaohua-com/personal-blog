@@ -1,0 +1,15 @@
+version: '3'
+
+tasks:
+  install:
+    cmds:
+      - go mod download
+  dev:
+    cmds:
+      - air
+  build:
+    preconditions:
+      - sh: test -f internal/webui/dist/index.html
+        msg: 请先执行 task frontend:build，或直接使用 task build
+    cmds:
+      - go build -tags production -trimpath -ldflags="-s -w" -o ../dist/personal-blog{{exeExt}} .

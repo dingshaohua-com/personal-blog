@@ -1,3 +1,8 @@
-.env
+# 演示环境配置随仓库交付。
+!/.env
+/tmp/
+/internal/webui/dist/
+/backend
+/backend.exe
 .idea/workspace.xml
 .DS_Store

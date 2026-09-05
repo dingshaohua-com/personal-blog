@@ -5,7 +5,7 @@ const env = loadEnv(process.env.NODE_ENV || 'development', process.cwd(), '');
 
 export default defineConfig({
   blog: {
-    input: env.OPENAPI_INPUT || 'http://localhost:8080/openapi.json',
+    input: env.OPENAPI_INPUT || 'http://localhost:18080/openapi.json',
     output: {
       clean: true,
       tsconfig: './tsconfig.app.json',

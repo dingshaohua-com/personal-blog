@@ -2,6 +2,7 @@ package bootstrap
 
 import (
 	sharedApi "backend/internal/shared/api"
+	"backend/internal/webui"
 	"fmt"
 	"log"
 	"net"
@@ -26,7 +27,7 @@ func (app *App) Run() {
 	addr := ":" + app.Config.HTTPPort
 	server := &http.Server{
 		Addr:    addr,
-		Handler: sharedApi.Cors(app.Router),
+		Handler: sharedApi.Cors(NewHTTPHandler(app.Router, webui.Handler())),
 	}
 	serviceURLs := []string{"http://localhost" + addr}
 	docURLs := []string{"http://localhost" + addr + "/docs"}

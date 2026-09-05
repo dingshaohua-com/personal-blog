@@ -1,0 +1,123 @@
+name: Build & Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  DEPLOY_DIR: /home/apps/blog-2026-server
+  APP_NAME: blog-server
+  APP_PORT: 8080
+  REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+  REMOTE_PORT: ${{ secrets.REMOTE_PORT || 22 }}
+  SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+
+      - name: Set up Task
+        uses: go-task/setup-task@v1
+        with:
+          version: '3.49.1'
+
+      - name: Install dependencies
+        run: task install
+
+      - name: Build embedded application
+        env:
+          CGO_ENABLED: 0
+          GOOS: linux
+          GOARCH: amd64
+          VITE_API_BASE_URL: /api
+        run: task build
+
+      - name: Prepare artifact
+        run: |
+          mkdir -p release
+          cp dist/personal-blog "release/$APP_NAME"
+          test -s backend/.env
+          cp backend/.env release/.env
+          tar -czf release.tar.gz -C release .
+
+      # ---------- 上传到服务器 ----------
+      - name: Upload artifact to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ env.REMOTE_HOST }}
+          port: ${{ env.REMOTE_PORT }}
+          username: root
+          key: ${{ env.SSH_PRIVATE_KEY }}
+          source: release.tar.gz
+          target: /tmp
+
+      # ---------- 部署 & 重启 ----------
+      - name: Deploy and restart
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ env.REMOTE_HOST }}
+          port: ${{ env.REMOTE_PORT }}
+          username: root
+          key: ${{ env.SSH_PRIVATE_KEY }}
+          envs: DEPLOY_DIR,APP_NAME,APP_PORT
+          script: |
+            set -e
+            mkdir -p "$DEPLOY_DIR"
+            mkdir -p "$DEPLOY_DIR/.incoming"
+            tar -xzf /tmp/release.tar.gz -C "$DEPLOY_DIR/.incoming"
+            test -s "$DEPLOY_DIR/.incoming/.env"
+            chmod 600 "$DEPLOY_DIR/.incoming/.env"
+            mv -f "$DEPLOY_DIR/.incoming/.env" "$DEPLOY_DIR/.env"
+            chmod +x "$DEPLOY_DIR/.incoming/$APP_NAME"
+            mv -f "$DEPLOY_DIR/.incoming/$APP_NAME" "$DEPLOY_DIR/$APP_NAME"
+            rm -f /tmp/release.tar.gz
+            cd "$DEPLOY_DIR"
+            chmod +x "$APP_NAME"
+
+            # 杀掉旧进程，重新启动
+            lsof -t -i:"$APP_PORT" | xargs -r kill -9 || true
+            sleep 1
+            HTTP_PORT="$APP_PORT" nohup ./"$APP_NAME" > app.log 2>&1 &
+            app_pid=$!
+
+            for attempt in $(seq 1 15); do
+              if ! kill -0 "$app_pid" 2>/dev/null; then
+                tail -n 30 app.log
+                exit 1
+              fi
+              if curl --fail --silent --max-time 2 "http://127.0.0.1:$APP_PORT/openapi.json" > /dev/null; then
+                echo "Deploy succeeded"
+                exit 0
+              fi
+              sleep 1
+            done
+            tail -n 30 app.log
+            exit 1

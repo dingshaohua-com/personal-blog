@@ -1,0 +1,13 @@
+version: '3'
+
+tasks:
+  install:
+    cmds:
+      - pnpm install --frozen-lockfile
+  dev:
+    cmds:
+      - pnpm run dev
+  build:
+    cmds:
+      - pnpm run build
+      - node scripts/stage-web.mjs
