@@ -127,4 +127,4 @@ git diff --exit-code -- src/api/generated src/api/index.ts
 
 文章详情使用 `react-markdown` 和 `remark-gfm` 渲染正文；编辑页可切换源码与预览。支持标题、列表、引用、代码块、表格、任务列表、链接和图片。原始 HTML 不执行，保留链接协议过滤。
 
-运行 `pnpm test:markdown` 验证渲染及外部内容处理，运行 `pnpm build` 检查类型和构建。
+运行 `pnpm test:markdown` 验证渲染及外部内容处理，运行 `pnpm build` 检查类型和构建
