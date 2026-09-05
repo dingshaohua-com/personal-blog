@@ -2,6 +2,13 @@
 
 React + Vite 前端，Go + Huma 后端。通过 Taskfile 统一开发和构建；发布时将网页嵌入 Go 可执行文件。
 
+## 项目链接
+
+- 项目演示地址：[https://blog.dingshaohua.com](https://blog.dingshaohua.com)
+- 后端接口文档：[https://blog.dingshaohua.com/api/docs](https://blog.dingshaohua.com/api/docs)
+- 项目源码地址：[https://gitlab.xiaoluxue.cn/dingshaohua/personal-blog](https://gitlab.xiaoluxue.cn/dingshaohua/personal-blog)
+- 项目架构说明：[https://wcng60ba718p.feishu.cn/wiki/D2KCwy9QAia9Cnki5Y3cs7Vgnpc](https://wcng60ba718p.feishu.cn/wiki/D2KCwy9QAia9Cnki5Y3cs7Vgnpc)
+
 ## 准备
 
 安装 Go（版本见 backend/go.mod）、Node.js、pnpm、Task 和 Air。Air 可通过 `go install github.com/air-verse/air@latest` 安装。
