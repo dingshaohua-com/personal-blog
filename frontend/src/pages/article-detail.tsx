@@ -1,6 +1,7 @@
 import { Link, useNavigate, useParams } from 'react-router';
 import api from '@/api';
 import DeleteArticleButton from '@/components/delete-article-button';
+import MarkdownContent from '@/components/markdown-content';
 import { Button } from '@/components/ui/button';
 import { apiErrorMessage, articleIdFromParam } from '@/utils/article';
 
@@ -42,7 +43,7 @@ export default function ArticleDetail() {
               <DeleteArticleButton id={id} title={data.title} onDeleted={() => navigate('/', { replace: true })} />
             </div>
           </header>
-          <div className="whitespace-pre-wrap break-words leading-8">{data.content || '暂无正文。'}</div>
+          <MarkdownContent content={data.content || '暂无正文。'} />
         </article>
       )}
     </main>

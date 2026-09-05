@@ -6,6 +6,7 @@ import { createServer } from 'vite';
 let server;
 let api;
 let axiosInstance;
+let articleHelpers;
 
 before(async () => {
   server = await createServer({
@@ -15,10 +16,46 @@ before(async () => {
   });
   ({ api } = await server.ssrLoadModule('/src/api/index.ts'));
   ({ axiosInstance } = await server.ssrLoadModule('/src/api/custom-axios.ts'));
+  articleHelpers = await server.ssrLoadModule('/src/utils/article.ts');
 });
 
 after(async () => {
   await server?.close();
+});
+
+test('article route IDs reject invalid values and cache invalidation stays within article resources', () => {
+  assert.equal(articleHelpers.articleIdFromParam('12'), 12);
+  for (const value of [undefined, '', '0', '-1', '1.5', '1e2', '12abc', '9007199254740992']) {
+    assert.equal(articleHelpers.articleIdFromParam(value), undefined);
+  }
+  assert.equal(articleHelpers.isArticleCacheKey(api.article.getListKey({ page: 2 })), true);
+  assert.equal(articleHelpers.isArticleCacheKey(api.article.getGetKey(12)), true);
+  assert.equal(articleHelpers.isArticleCacheKey(api.articleType.getListKey()), false);
+  assert.equal(articleHelpers.isArticleCacheKey(api.feed.getListKey()), false);
+});
+
+test('article create and update preserve body fields including cleared content', async () => {
+  const body = { title: '新文章', typeId: 2, content: '第一行\n第二行' };
+  const created = await api.article.create(body, {
+    adapter: async (config) => {
+      assert.equal(config.url, '/article');
+      assert.equal(config.method, 'post');
+      assert.deepEqual(JSON.parse(config.data), body);
+      return { data: { id: 12 }, status: 200, statusText: 'OK', headers: {}, config };
+    },
+  });
+  await api.article.update(
+    created.id,
+    { title: '修改文章', content: '' },
+    {
+      adapter: async (config) => {
+        assert.equal(config.url, '/article/12');
+        assert.equal(config.method, 'put');
+        assert.deepEqual(JSON.parse(config.data), { title: '修改文章', content: '' });
+        return { data: undefined, status: 204, statusText: 'No Content', headers: {}, config };
+      },
+    },
+  );
 });
 
 test('generated article list preserves pagination, query params and per-call options', async () => {

@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router';
 import { useSWRConfig } from 'swr';
 import api from '@/api';
 import type { ArticleDetailResponse } from '@/api/generated/models';
+import MarkdownContent from '@/components/markdown-content';
 import { Button } from '@/components/ui/button';
 import { apiErrorMessage, articleIdFromParam, isArticleCacheKey } from '@/utils/article';
 
@@ -13,6 +14,7 @@ function ArticleForm({ article }: { article?: ArticleDetailResponse }) {
   const [content, setContent] = useState(article?.content ?? '');
   const [typeId, setTypeId] = useState(article?.typeId ? String(article.typeId) : '');
   const [saving, setSaving] = useState(false);
+  const [preview, setPreview] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const { mutate } = useSWRConfig();
@@ -88,7 +90,23 @@ function ArticleForm({ article }: { article?: ArticleDetailResponse }) {
           <label htmlFor="article-content" className="block font-medium">
             正文
           </label>
-          <textarea id="article-content" name="content" rows={16} value={content} onChange={(event) => setContent(event.target.value)} className={`${fieldClass} resize-y leading-7`} placeholder="写下文章内容…" />
+          <div className="flex gap-2" role="group" aria-label="正文模式">
+            <Button type="button" size="sm" variant={preview ? 'outline' : 'secondary'} aria-pressed={!preview} onClick={() => setPreview(false)}>
+              编辑源码
+            </Button>
+            <Button type="button" size="sm" variant={preview ? 'secondary' : 'outline'} aria-pressed={preview} onClick={() => setPreview(true)}>
+              预览
+            </Button>
+          </div>
+          <textarea id="article-content" name="content" rows={16} hidden={preview} value={content} onChange={(event) => setContent(event.target.value)} className={`${fieldClass} resize-y font-mono leading-7`} aria-describedby="content-hint" placeholder="支持 Markdown，例如 ## 标题、**加粗**、列表和代码块…" />
+          {preview && (
+            <section aria-label="Markdown 预览" className="min-h-64 rounded-lg border bg-background p-4 sm:p-6">
+              <MarkdownContent content={content || '暂无内容，请先在编辑源码中输入正文。'} />
+            </section>
+          )}
+          <p id="content-hint" className="text-sm text-muted-foreground">
+            支持 Markdown：标题、列表、引用、代码块、表格、链接和图片。
+          </p>
         </div>
       </fieldset>
       {error && (
